@@ -47,7 +47,71 @@ def logout():
     logout_user() # Efetua o logout do usuário
     return jsonify({"message": "Logout efetuado com sucesso!"})
 
-@app.route("/", methods=["GET"])
+@app.route("/user", methods=['POST'])
+@login_required # Rota protegida
+def create_user():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if username and password:
+        # Consulta o usuário no banco de dados
+        user = User.query.filter_by(username=username).first()
+        
+        # Se o usuário não existir
+        if not user:
+            user = User(username=username, password=password)
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({"message": "Usuário inserido com sucesso."})
+        
+        return jsonify({"message": "Usuário já cadastrado."}), 409
+
+    return jsonify({"message": "Usuário não cadastrado."}), 401
+
+@app.route("/user/<int:id_user>", methods=['GET'])
+@login_required
+def get_user(id_user):
+    user = User.query.filter_by(id=id_user).first()
+
+    if user:
+        return jsonify({"id": user.id,
+                        "username": user.username
+                       })
+    
+    return jsonify({"message": "Usuário não encontrado."}), 404
+
+@app.route("/user/<int:id_user>", methods=['PUT'])
+@login_required
+def update_user(id_user):
+    data = request.json
+    password = data.get("password")
+
+    if password:
+        user = User.query.filter_by(id=id_user).first()
+
+        if user:
+            user.password = password
+            db.session.commit()
+            return ({"message": f"Usuário {user.username} atualizado com sucesso."})
+        
+        return ({"message": "Usário não econtrado."}), 404
+    
+    return ({"message": "Preencha o campo password."}), 401
+
+@app.route("/user/<id:id_user>", methods=['DELETE'])
+@login_required
+def delete_user(id_user):
+    user = User.query.filter_by(id=id_user).first()
+
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return ({"message": f"Usuário {user.username} deletado com sucesso."})
+    
+    return ({"message": "Usuário não localizado."}), 404
+
+@app.route("/", methods=['GET'])
 def hello_world():
 
     return "Hello World"
