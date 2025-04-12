@@ -86,35 +86,36 @@ def get_user(id_user):
 def update_user(id_user):
     data = request.json
     password = data.get("password")
-
     if password:
         user = User.query.filter_by(id=id_user).first()
 
         if user:
             user.password = password
             db.session.commit()
-            return ({"message": f"Usuário {user.username} atualizado com sucesso."})
+            return jsonify({"message": f"Usuário {user.username} atualizado com sucesso."})
         
-        return ({"message": "Usário não econtrado."}), 404
+        return jsonify({"message": "Usário não econtrado."}), 404
     
-    return ({"message": "Preencha o campo password."}), 401
+    return jsonify({"message": "Preencha o campo password."}), 401
 
-@app.route("/user/<id:id_user>", methods=['DELETE'])
+@app.route("/user/<int:id_user>", methods=['DELETE'])
 @login_required
 def delete_user(id_user):
     user = User.query.filter_by(id=id_user).first()
+    user_logged = int(current_user.get_id())
 
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        return ({"message": f"Usuário {user.username} deletado com sucesso."})
-    
-    return ({"message": "Usuário não localizado."}), 404
+    if id_user != user_logged:
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({"message": f"Usuário {user.username} deletado com sucesso."})
+        return jsonify({"message": "Usuário não localizado."}), 404
+    return jsonify({"message": "Não é possível deletar um usuário logado."}), 401
 
 @app.route("/", methods=['GET'])
 def hello_world():
 
-    return "Hello World"
+    return "API Flask Auth"
 
 if __name__ == '__main__':
     app.run(debug=True)
