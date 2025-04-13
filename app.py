@@ -8,15 +8,23 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
+secret_key = os.getenv("SECRET_KEY")
+
+mysql_user = os.getenv("MYSQL_USER")
+mysql_password = os.getenv("MYSQL_PASSWORD")
+mysql_database = os.getenv("MYSQL_DATABASE")
+mysql_host = os.getenv("MYSQL_HOST")
+mysql_port = os.getenv("MYSQL_PORT")
+
 
 app = Flask(__name__)
 # Criação de uma secret key
-app.config['SECRET_KEY'] = "your_secret_key"
+app.config['SECRET_KEY'] = secret_key
 # Criação do caminho de conexão com o bd
 #app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
 
 # Conexão banco de dados MYSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv("MYSQL_USER")}:{os.getenv("MYSQL_PASSWORD")}@{os.getenv("MYSQL_HOST")}:{os.getenv("MYSQL_PORT")}/{os.getenv("MYSQL_DATABASE")}"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}"
 
 login_manager = LoginManager()
 db.init_app(app)
