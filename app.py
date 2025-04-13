@@ -2,12 +2,21 @@ from flask import Flask, request, jsonify
 from models.user import User
 from database import db
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 app = Flask(__name__)
 # Criação de uma secret key
 app.config['SECRET_KEY'] = "your_secret_key"
 # Criação do caminho de conexão com o bd
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.db"
+
+# Conexão banco de dados MYSQL
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv("MYSQL_USER")}:{os.getenv("MYSQL_PASSWORD")}@{os.getenv("MYSQL_HOST")}:{os.getenv("MYSQL_PORT")}/{os.getenv("MYSQL_DATABASE")}"
 
 login_manager = LoginManager()
 db.init_app(app)
