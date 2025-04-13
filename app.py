@@ -80,7 +80,7 @@ def create_user():
         
         # Se o usuário não existir
         if not user:
-            user = User(username=username, password=password)
+            user = User(username=username, password=password, role="user")
             db.session.add(user)
             db.session.commit()
             return jsonify({"message": "Usuário inserido com sucesso."})
@@ -106,8 +106,14 @@ def get_user(id_user):
 def update_user(id_user):
     data = request.json
     password = data.get("password")
+
     if password:
+
         user = User.query.filter_by(id=id_user).first()
+
+        # Só permite atualizar a senha se for o usuário logado ou se for admin
+        if id_user != current_user.id and current_user.role == "user":
+            return jsonify({"message": "Operação não permitida"}), 403
 
         if user:
             user.password = password
@@ -123,6 +129,10 @@ def update_user(id_user):
 def delete_user(id_user):
     user = User.query.filter_by(id=id_user).first()
     user_logged = int(current_user.get_id())
+
+    # Não permite deletar caso a role seja diferente de admin
+    if current_user.role != "admin":
+        return jsonify({"message": "Operação não permitida."}), 403
 
     if id_user != user_logged:
         if user:
