@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from models.user import User
 from database import db
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
 
@@ -25,6 +26,8 @@ app.config['SECRET_KEY'] = secret_key
 
 # Conexão banco de dados MYSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}"
+
+migrate = Migrate(app, db) # Cria o objeto de migração do banco de dados
 
 login_manager = LoginManager()
 db.init_app(app)
