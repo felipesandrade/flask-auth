@@ -6,3 +6,4 @@ pymysql==1.1.0
 cryptography==41.0.7
 python-dotenv==1.1.0
 Flask-Migrate==4.1.0
+bcrypt==4.3.0

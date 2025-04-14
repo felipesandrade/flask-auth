@@ -5,6 +5,7 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+import bcrypt
 
 # Load environment variables from .env file
 load_dotenv()
@@ -51,15 +52,17 @@ def login():
     if username and password:
         # Consulta o usuário no banco de dados
         user = User.query.filter_by(username=username).first()
+        password_hash = user.password.encode(encoding='utf-8') # Transforma o hash da senha em bytes para o bcrypt
 
         # Verifica se o usuário existe e se a password está correta
-        if user and user.password == password:
+        if user and bcrypt.checkpw(str.encode(password), password_hash):
+        # if user and user.password == password:
             # Autenticação do usuário
             login_user(user)
             print(current_user.is_authenticated)
             return jsonify({"message": f"Usuario: {user.username}, logado"})
 
-    return jsonify({"message": "Credenciais inválidas"}), 400 
+    return jsonify({"message": "Dados invalidos."}), 401 
 
 @app.route("/logout", methods=['GET'])
 @login_required # Proteje a rota só permitindo acesso se o usuário estiver logado
@@ -80,14 +83,16 @@ def create_user():
         
         # Se o usuário não existir
         if not user:
-            user = User(username=username, password=password, role="user")
+            # Cria o hash da senha
+            password_hash = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
+            user = User(username=username, password=password_hash, role="user")
             db.session.add(user)
             db.session.commit()
             return jsonify({"message": "Usuário inserido com sucesso."})
         
         return jsonify({"message": "Usuário já cadastrado."}), 409
 
-    return jsonify({"message": "Usuário não cadastrado."}), 401
+    return jsonify({"message": "Dados invalidos."}), 401
 
 @app.route("/user/<int:id_user>", methods=['GET'])
 @login_required
